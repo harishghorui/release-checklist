@@ -1,19 +1,38 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import pg from "pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+function getConnectionString(): string {
+  try {
+    const { env } = getCloudflareContext();
+    const hyperdrive = (env as unknown as { HYPERDRIVE?: { connectionString: string } })?.HYPERDRIVE;
+    if (hyperdrive?.connectionString) {
+      return hyperdrive.connectionString;
+    }
+  } catch {
+    // Not running inside Cloudflare Workers request context
+  }
+
+  return (
+    process.env.HYPERDRIVE_CONNECTION_STRING ||
+    process.env.DATABASE_URL ||
+    ""
+  );
+}
+
 function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
   }
 
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = getConnectionString();
   if (!connectionString) {
-    console.error("DATABASE_URL environment variable is not defined!");
+    console.error("No database connection string found (DATABASE_URL / HYPERDRIVE)!");
   }
 
   const pool = new pg.Pool({

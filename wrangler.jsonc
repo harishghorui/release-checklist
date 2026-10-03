@@ -1,11 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "release-checklist-harish",
+  "name": "release-checklist",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": [
     "nodejs_compat",
     "nodejs_compat_populate_process_env"
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "356ce3d71e824c5ea5305e339f4bdab6"
+    }
   ],
   "assets": {
     "directory": ".open-next/assets",
